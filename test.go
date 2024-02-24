@@ -6,8 +6,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
 	"time"
+	"ymgo/pkg/mango"
 	"ymgo/pkg/options"
-	"ymgo/pkg/ymgo"
 )
 
 type PedometerInfo struct {
@@ -19,6 +19,10 @@ type PedometerInfo struct {
 	MaxWalkingCount int                `bson:"maxWalkingCount"`
 	ImageAdInfo     AdInfo             `bson:"imageAdInfo"`
 	VideoAdInfo     AdInfo             `bson:"videoAdInfo"`
+}
+
+func (p *PedometerInfo) CollectionName() string {
+	return "pedometerInfo"
 }
 
 type AdInfo struct {
@@ -34,15 +38,15 @@ type BenefitInfo struct {
 
 func main() {
 
-	clientOpts := options.Client()
-	clientOpts.ApplyURI("mongodb://root:1234@localhost:27017")
+	clientOpts := options.Client().
+		ApplyURI("mongodb://root:1234@localhost:27017")
 
 	ctx := context.Background()
 	defer ctx.Done()
 
-	mongoCTX := ymgo.NewContext(ctx)
+	clientCTX := mango.NewContext(ctx)
 
-	client, err := ymgo.NewClient(mongoCTX, clientOpts)
+	client, err := mango.NewClient(clientCTX, clientOpts)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -51,26 +55,29 @@ func main() {
 
 	hex, _ := primitive.ObjectIDFromHex("65ba64579912a58c1b526fed")
 
-	var res PedometerInfo
+	var dest PedometerInfo
 
-	mongoCTX.SetDatabase(db)
+	ctx = context.Background()
+	defer ctx.Done()
 
-	err = ymgo.FindQuery(mongoCTX).
+	mangoCTX := mango.NewContext(ctx)
+	mangoCTX.SetDatabase(db)
+	mangoCTX.SetCollection(&PedometerInfo{})
+
+	err = mango.Find(mangoCTX).
 		Equals("_id", hex).
-		FindOne(&res)
+		One(&dest)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	PrintStruct(res)
+	PrintStruct(dest)
 
-	mongoCTX.SetUpdateTarget(PedometerInfo{})
-
-	result, err := ymgo.UpdateQuery(mongoCTX).
+	result, err := mango.Update(mangoCTX).
 		Equals("_id", hex).
 		Set("maxPoint", 44).
-		UpdateOne()
+		One()
 
 	if err != nil {
 		log.Fatal(err)

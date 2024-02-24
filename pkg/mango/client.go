@@ -1,4 +1,4 @@
-package ymgo
+package mango
 
 import (
 	"go.mongodb.org/mongo-driver/mongo"

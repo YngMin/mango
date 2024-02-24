@@ -1,11 +1,11 @@
-package ymgo
+package mango
 
 import "context"
 
 type Context struct {
 	context.Context
-	db           *Database
-	updateTarget any
+	db         *Database
+	collection ICollection
 }
 
 func NewContext(ctx context.Context) Context {
@@ -16,6 +16,6 @@ func (ctx *Context) SetDatabase(db *Database) {
 	ctx.db = db
 }
 
-func (ctx *Context) SetUpdateTarget(o any) {
-	ctx.updateTarget = o
+func (ctx *Context) SetCollection(o ICollection) {
+	ctx.collection = o
 }
