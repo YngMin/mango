@@ -64,6 +64,8 @@ func main() {
 	}
 
 	PrintStruct(res)
+
+	ymgo.UpdateQuery(mongoCTX).Equals("_id", hex).Set("maxPoint", 100000000)
 }
 
 func PrintStruct(o any) {
