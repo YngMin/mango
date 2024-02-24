@@ -99,14 +99,14 @@ func (u *Update) Unset(key string, value any) *Update {
 	return u
 }
 
-func (u *Update) UpdateOne(target any) (result UpdateResult, err error) {
-	collection := u.ctx.db.Collection(getCollectionName(target))
+func (u *Update) UpdateOne() (result UpdateResult, err error) {
+	collection := u.ctx.db.Collection(getCollectionName(u.ctx.updateTarget))
 	result, err = collection.UpdateOne(u.ctx, u.filter, u.updateValue())
 	return
 }
 
-func (u *Update) UpdateMany(target any) (result UpdateResult, err error) {
-	collection := u.ctx.db.Collection(getCollectionName(target))
+func (u *Update) UpdateMany() (result UpdateResult, err error) {
+	collection := u.ctx.db.Collection(getCollectionName(u.ctx.updateTarget))
 	result, err = collection.UpdateMany(u.ctx, u.filter, u.updateValue())
 	return
 }

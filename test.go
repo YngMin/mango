@@ -65,7 +65,18 @@ func main() {
 
 	PrintStruct(res)
 
-	ymgo.UpdateQuery(mongoCTX).Equals("_id", hex).Set("maxPoint", 100000000)
+	mongoCTX.SetUpdateTarget(PedometerInfo{})
+
+	result, err := ymgo.UpdateQuery(mongoCTX).
+		Equals("_id", hex).
+		Set("maxPoint", 44).
+		UpdateOne()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	PrintStruct(result)
 }
 
 func PrintStruct(o any) {
