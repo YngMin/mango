@@ -1,6 +1,6 @@
 module github.com/YngMin/mango
 
-go 1.22.0
+go 1.21.0
 
 require (
 	github.com/golang/snappy v0.0.1 // indirect
