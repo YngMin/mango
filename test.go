@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
+	"mango/pkg/mango"
+	"mango/pkg/options"
 	"time"
-	"ymgo/pkg/mango"
-	"ymgo/pkg/options"
 )
 
 type PedometerInfo struct {
@@ -38,8 +38,9 @@ type BenefitInfo struct {
 
 func main() {
 
-	clientOpts := options.Client().
-		ApplyURI("mongodb://root:1234@localhost:27017")
+	clientOpts := options.Client()
+
+	clientOpts.ApplyURI("mongodb://root:1234@localhost:27017")
 
 	ctx := context.Background()
 	defer ctx.Done()
