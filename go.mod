@@ -1,6 +1,6 @@
 module github.com/YngMin/mango
 
-go 1.21.0
+go 1.22.0
 
 require go.mongodb.org/mongo-driver v1.14.0
 
