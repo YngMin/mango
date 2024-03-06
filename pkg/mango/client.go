@@ -1,10 +1,10 @@
 package mango
 
 import (
+	"github.com/YngMin/mango/pkg/options"
+	"github.com/YngMin/mango/pkg/sliceutil"
 	"go.mongodb.org/mongo-driver/mongo"
 	mongoOptions "go.mongodb.org/mongo-driver/mongo/options"
-	"mango/pkg/options"
-	"mango/pkg/sliceutil"
 )
 
 type Client struct {

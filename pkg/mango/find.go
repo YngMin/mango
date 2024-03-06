@@ -1,8 +1,8 @@
 package mango
 
 import (
+	"github.com/YngMin/mango/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
-	"mango/pkg/errors"
 )
 
 type FindQuery struct {

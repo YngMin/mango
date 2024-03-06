@@ -1,4 +1,4 @@
-module mango
+module github.com/YngMin/mango
 
 go 1.22.0
 
