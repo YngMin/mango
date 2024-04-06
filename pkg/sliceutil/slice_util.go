@@ -1,6 +1,6 @@
 package sliceutil
 
-func Extract[T, V any](slice []T, extractFunc func(idx int) V) []V {
+func Map[T, V any](slice []T, extractFunc func(idx int) V) []V {
 	values := make([]V, len(slice))
 	for idx := range slice {
 		values[idx] = extractFunc(idx)
@@ -8,7 +8,7 @@ func Extract[T, V any](slice []T, extractFunc func(idx int) V) []V {
 	return values
 }
 
-func ExtractIf[T, V any](slice []T, extractIfFunc func(idx int) (extracted V, ok bool)) []V {
+func MapIf[T, V any](slice []T, extractIfFunc func(idx int) (extracted V, ok bool)) []V {
 	values := make([]V, 0)
 	for idx := range slice {
 		if v, ok := extractIfFunc(idx); ok {

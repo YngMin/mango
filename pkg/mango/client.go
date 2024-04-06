@@ -12,7 +12,7 @@ type Client struct {
 }
 
 func NewClient(ctx Context, opts ...*options.ClientOptions) (client *Client, err error) {
-	mongoOpts := sliceutil.ExtractIf(opts, func(idx int) (extracted *mongoOptions.ClientOptions, ok bool) {
+	mongoOpts := sliceutil.MapIf(opts, func(idx int) (extracted *mongoOptions.ClientOptions, ok bool) {
 		if opts[idx] == nil {
 			return
 		}
@@ -35,7 +35,7 @@ func NewClient(ctx Context, opts ...*options.ClientOptions) (client *Client, err
 }
 
 func (c *Client) Database(name string, opts ...*options.DatabaseOptions) (database *Database) {
-	mongoOpts := sliceutil.ExtractIf(opts, func(idx int) (value *mongoOptions.DatabaseOptions, ok bool) {
+	mongoOpts := sliceutil.MapIf(opts, func(idx int) (value *mongoOptions.DatabaseOptions, ok bool) {
 		if opts[idx] == nil {
 			return
 		}
