@@ -1,48 +1,54 @@
 package mango
 
 import (
+	"github.com/YngMin/mango/pkg/sliceutil"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type Collection struct {
-	collection *mongo.Collection
+type Collection[T any] struct {
+	database *mongo.Database
+	*mongo.Collection
 }
 
-type InsertOneResult *mongo.InsertOneResult
+func GetCollection[T any](client *Client, databaseName, collectionName string) *Collection[T] {
+	database := client.Database(databaseName)
+	collection := database.Collection(collectionName)
+	return &Collection[T]{
+		database:   database,
+		Collection: collection,
+	}
+}
 
-type InsertManyResult *mongo.InsertManyResult
-
-type UpdateResult *mongo.UpdateResult
-
-func (c *Collection) InsertOne(ctx Context, document any) (result InsertOneResult, err error) {
-	result, err = c.collection.InsertOne(ctx, document)
+func (c *Collection[T]) InsertOne(ctx Context, document T) (result *mongo.InsertOneResult, err error) {
+	result, err = c.Collection.InsertOne(ctx, document)
 	return
 }
 
-func (c *Collection) InsertMany(ctx Context, documents []any) (result InsertManyResult, err error) {
-	result, err = c.collection.InsertMany(ctx, documents)
+func (c *Collection[T]) InsertMany(ctx Context, documents []T) (result *mongo.InsertManyResult, err error) {
+	result, err = c.Collection.InsertMany(ctx, sliceutil.Map(documents, func(idx int) any {
+		return documents[idx]
+	}))
 	return
 }
 
-func (c *Collection) FindOne(ctx Context, filter bson.M, dest ICollection) (err error) {
-	result := c.collection.FindOne(ctx, filter)
-	if resultErr := result.Err(); resultErr != nil {
-		err = resultErr
+func (c *Collection[T]) FindOne(ctx Context, filter bson.M) (document T, err error) {
+	result := c.Collection.FindOne(ctx, filter)
+	if err = result.Err(); err != nil {
 		return
 	}
 
-	err = result.Decode(dest)
+	err = result.Decode(&document)
 	if err != nil {
 		return
 	}
 	return
 }
 
-func (c *Collection) Find(ctx Context, filter bson.M, dest ICollection) (err error) {
+func (c *Collection[T]) Find(ctx Context, filter bson.M) (documents []T, err error) {
 	var cur *mongo.Cursor
-	cur, err = c.collection.Find(ctx, filter)
+	cur, err = c.Collection.Find(ctx, filter)
 	if err != nil {
 		return
 	}
@@ -51,26 +57,29 @@ func (c *Collection) Find(ctx Context, filter bson.M, dest ICollection) (err err
 		_ = cur.Close(ctx)
 	}()
 
-	err = cur.All(ctx, dest)
-	if err != nil {
-		return
+	documents = make([]T, 0)
+	for cur.Next(ctx) {
+		var doc T
+		if err = cur.Decode(&doc); err != nil {
+			return
+		}
+		documents = append(documents, doc)
 	}
-
 	return
 }
 
-func (c *Collection) UpdateOne(ctx Context, filter, update bson.M) (result UpdateResult, err error) {
-	result, err = c.collection.UpdateOne(ctx, filter, update)
+func (c *Collection[T]) UpdateOne(ctx Context, filter, update bson.M) (result *mongo.UpdateResult, err error) {
+	result, err = c.Collection.UpdateOne(ctx, filter, update)
 	return
 }
 
-func (c *Collection) UpdateMany(ctx Context, filter, update bson.M) (result UpdateResult, err error) {
-	result, err = c.collection.UpdateMany(ctx, filter, update)
+func (c *Collection[T]) UpdateMany(ctx Context, filter, update bson.M) (result *mongo.UpdateResult, err error) {
+	result, err = c.Collection.UpdateMany(ctx, filter, update)
 	return
 }
 
-func (c *Collection) UpdateByID(ctx Context, id primitive.ObjectID, update bson.M) (result UpdateResult, err error) {
-	result, err = c.collection.UpdateByID(ctx, id, update)
+func (c *Collection[T]) UpdateByID(ctx Context, id primitive.ObjectID, update bson.M) (result *mongo.UpdateResult, err error) {
+	result, err = c.Collection.UpdateByID(ctx, id, update)
 	return
 }
 

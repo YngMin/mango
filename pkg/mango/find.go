@@ -1,37 +1,41 @@
 package mango
 
 import (
-	"github.com/YngMin/mango/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-type FindQuery struct {
-	ctx    Context
-	filter bson.M
-	sort   []string
+type FindQuery[T any] struct {
+	ctx        Context
+	collection *Collection[T]
+	filter     bson.M
+	sort       []string
 }
 
-func Find(ctx Context) *FindQuery {
-	return &FindQuery{
-		ctx:    ctx,
-		filter: make(bson.M),
-		sort:   make([]string, 0),
+func Find[T any](ctx Context, collection *Collection[T]) *FindQuery[T] {
+	if collection == nil {
+		return nil
+	}
+	return &FindQuery[T]{
+		ctx:        ctx,
+		collection: collection,
+		filter:     make(bson.M),
+		sort:       make([]string, 0),
 	}
 }
 
-func (f *FindQuery) Equals(key string, value any) *FindQuery {
+func (f *FindQuery[T]) Equals(key string, value any) *FindQuery[T] {
 	f.filter[key] = value
 	return f
 }
 
-func (f *FindQuery) In(key string, values any) *FindQuery {
+func (f *FindQuery[T]) In(key string, values any) *FindQuery[T] {
 	f.filter[key] = bson.M{
 		"$in": values,
 	}
 	return f
 }
 
-func (f *FindQuery) Like(key, value string, ignoreCase bool) *FindQuery {
+func (f *FindQuery[T]) Like(key, value string, ignoreCase bool) *FindQuery[T] {
 	regexValue := bson.M{
 		"$regex": value,
 	}
@@ -42,35 +46,35 @@ func (f *FindQuery) Like(key, value string, ignoreCase bool) *FindQuery {
 	return f
 }
 
-func (f *FindQuery) GT(key string, value any) *FindQuery {
+func (f *FindQuery[T]) GT(key string, value any) *FindQuery[T] {
 	f.filter[key] = bson.M{
 		"$gt": value,
 	}
 	return f
 }
 
-func (f *FindQuery) GTE(key string, value any) *FindQuery {
+func (f *FindQuery[T]) GTE(key string, value any) *FindQuery[T] {
 	f.filter[key] = bson.M{
 		"$gte": value,
 	}
 	return f
 }
 
-func (f *FindQuery) LT(key string, value any) *FindQuery {
+func (f *FindQuery[T]) LT(key string, value any) *FindQuery[T] {
 	f.filter[key] = bson.M{
 		"$lt": value,
 	}
 	return f
 }
 
-func (f *FindQuery) LTE(key string, value any) *FindQuery {
+func (f *FindQuery[T]) LTE(key string, value any) *FindQuery[T] {
 	f.filter[key] = bson.M{
 		"$lte": value,
 	}
 	return f
 }
 
-func (f *FindQuery) Sort(key string, desc bool) *FindQuery {
+func (f *FindQuery[T]) Sort(key string, desc bool) *FindQuery[T] {
 	if desc {
 		key = "-" + key
 	}
@@ -78,37 +82,17 @@ func (f *FindQuery) Sort(key string, desc bool) *FindQuery {
 	return f
 }
 
-func (f *FindQuery) One(dest ICollection) (err error) {
-	err = f.validate()
-	if err != nil {
-		return
-	}
-
-	collection := f.ctx.db.Collection(dest)
-	err = collection.FindOne(f.ctx, f.filter, dest)
+func (f *FindQuery[T]) One() (document T, err error) {
+	document, err = f.collection.FindOne(f.ctx, f.filter)
 	if err != nil {
 		return
 	}
 	return
 }
 
-func (f *FindQuery) All(dest ICollection) (err error) {
-	err = f.validate()
+func (f *FindQuery[T]) All() (documents []T, err error) {
+	documents, err = f.collection.Find(f.ctx, f.filter)
 	if err != nil {
-		return
-	}
-
-	collection := f.ctx.db.Collection(dest)
-	err = collection.Find(f.ctx, f.filter, dest)
-	if err != nil {
-		return
-	}
-	return
-}
-
-func (f *FindQuery) validate() (err error) {
-	if f.ctx.db == nil {
-		err = errors.ErrNeedDatabase
 		return
 	}
 	return
