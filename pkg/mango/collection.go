@@ -82,7 +82,3 @@ func (c *Collection[T]) UpdateByID(ctx Context, id primitive.ObjectID, update bs
 	result, err = c.Collection.UpdateByID(ctx, id, update)
 	return
 }
-
-type ICollection interface {
-	CollectionName() string
-}
